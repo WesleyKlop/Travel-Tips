@@ -6,7 +6,8 @@
 .DS_Store
 /build
 /captures
-
+google-services.json
+volley/
 
 #built application files
 *.apk
@@ -18,17 +19,5 @@
 # Java class files
 *.class
 
-# generated files
-bin/
-gen/
-
-# Windows thumbnail db
-Thumbs.db
-
-# Eclipse project files
-.classpath
-.project
-
 #NDK
 obj/
-volley/
