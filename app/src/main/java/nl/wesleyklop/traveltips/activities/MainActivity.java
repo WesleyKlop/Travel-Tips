@@ -1,5 +1,8 @@
 package nl.wesleyklop.traveltips.activities;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,6 +32,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +47,9 @@ import nl.wesleyklop.traveltips.R;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener {
+
     public static final String TAG = "MainActivity";
+
     private static final int RC_SIGN_IN = 2428;
     protected RequestQueue queue;
     GoogleApiClient mGoogleApiClient;
@@ -75,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
+                .requestIdToken(getString(R.string.server_client_id))
                 .build();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -100,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements
         Map<String, String> params = new HashMap<>();
         String searchQuery = "";
 
-        // TODO: add search EditText and implement it heres
+        // TODO: add search EditText and implement it here
 
         params.put("search", searchQuery);
 
@@ -111,7 +118,10 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        menu.findItem(R.id.action_login).setVisible(false);
+        if (isUserLoggedIn) {
+            menu.findItem(R.id.action_login).setVisible(false);
+            menu.findItem(R.id.action_logout).setVisible(true);
+        }
         return true;
     }
 
@@ -123,9 +133,57 @@ public class MainActivity extends AppCompatActivity implements
                 return true;
             case R.id.action_login:
                 signIn();
+                return true;
+            case R.id.action_logout:
+                if (mGoogleApiClient.isConnected()) {
+                    signOut();
+                } else {
+                    Snackbar.make(findViewById(R.id.MainActivity), "Unable to sign out", Snackbar.LENGTH_SHORT).show();
+                }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void signOut() {
+        DialogInterface.OnClickListener dialogClickListener = new Dialog.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, final int which) {
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                        new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(@NonNull Status status) {
+                                if (which != DialogInterface.BUTTON_POSITIVE) {
+                                    Snackbar.make(findViewById(R.id.MainActivity), "You're now signed out", Snackbar.LENGTH_LONG).show();
+                                }
+                            }
+                        }
+                );
+                if (which == DialogInterface.BUTTON_POSITIVE) {
+                    Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+                            new ResultCallback<Status>() {
+                                @Override
+                                public void onResult(@NonNull Status status) {
+                                    Snackbar.make(findViewById(R.id.MainActivity), "You're now fully disconnected", Snackbar.LENGTH_LONG).show();
+                                }
+                            }
+                    );
+                }
+                isUserLoggedIn = false;
+                invalidateOptionsMenu();
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getView().getContext());
+        builder.setMessage("Do you want to completely revoke access your account from the app?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener)
+                .show();
+    }
+
+    private View getView() {
+        return findViewById(R.id.MainActivity);
     }
 
     public void populateListView() {
@@ -240,9 +298,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleSignInResult(GoogleSignInResult result, boolean isAutoSignIn) {
-        Log.d(TAG, "handleSignInResult: " + result.isSuccess());
+        Log.d(TAG, "handleSignInResult is success: " + result.isSuccess());
         if (result.isSuccess()) {
-            isUserLoggedIn = true;
+            this.isUserLoggedIn = true;
             invalidateOptionsMenu();
             // Show authenticated UI
             GoogleSignInAccount account = result.getSignInAccount();

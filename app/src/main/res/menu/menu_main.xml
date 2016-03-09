@@ -10,4 +10,8 @@
     <item
         android:id="@+id/action_login"
         android:title="@string/common_signin_button_text" />
+    <item
+        android:id="@+id/action_logout"
+        android:title="@string/action_logout"
+        android:visible="false" />
 </menu>
