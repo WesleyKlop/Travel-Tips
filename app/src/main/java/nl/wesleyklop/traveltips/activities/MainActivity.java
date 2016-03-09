@@ -103,6 +103,14 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+/*
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+*/
+
     protected Map<String, String> getSearchParams() {
         Map<String, String> params = new HashMap<>();
         String searchQuery = "";
@@ -187,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void populateListView() {
-        JsonRequest countryListRequest = new JsonRequest(Request.Method.GET, "test.json", JsonRequest.noParams(),
+        JsonRequest countryListRequest = new JsonRequest(Request.Method.GET, "json.php", getCountryParams(),
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -211,11 +219,11 @@ public class MainActivity extends AppCompatActivity implements
                             try {
                                 // Get the JSONObject for the current row
                                 JSONObject currRow = data.getJSONObject(i);
-                                Log.v(TAG, currRow.toString());
+                                //Log.v(TAG, currRow.toString());
                                 // Fetch the country name from the object
-                                countryName = currRow.getString("country");
-                                countryTips = String.valueOf(currRow.getInt("tips"));
-                                countryId = currRow.getString("id");
+                                countryName = currRow.getString("Name");
+                                countryTips = String.valueOf(currRow.getInt("TipsCount"));
+                                countryId = currRow.getString("CountryId");
                             } catch (JSONException e) {
                                 Log.e(TAG, e.toString());
                             }
@@ -274,6 +282,13 @@ public class MainActivity extends AppCompatActivity implements
                 }
         );
         queue.add(countryListRequest);
+    }
+
+    private Map<String, String> getCountryParams() {
+        Map<String, String> params = new HashMap<>();
+        params.put("action", "countries");
+
+        return params;
     }
 
     @Override
