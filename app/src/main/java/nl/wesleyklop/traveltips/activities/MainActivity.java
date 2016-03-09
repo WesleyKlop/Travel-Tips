@@ -23,7 +23,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -44,6 +43,7 @@ import java.util.Map;
 
 import nl.wesleyklop.traveltips.JsonRequest;
 import nl.wesleyklop.traveltips.R;
+import nl.wesleyklop.traveltips.ReqQueue;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener {
@@ -74,8 +74,8 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        queue = Volley.newRequestQueue(this);
-        queue.getCache().clear();
+        queue = ReqQueue.getInstance(getApplicationContext())
+                .getRequestQueue();
 
         populateListView();
 
@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 
@@ -307,6 +307,9 @@ public class MainActivity extends AppCompatActivity implements
 
             if (account != null) {
                 Log.d(TAG, account.getDisplayName() + " is now logged in");
+
+                signInUser(account.getIdToken());
+
                 if (isAutoSignIn) {
                     Snackbar.make(findViewById(R.id.MainActivity), "Welcome back " + account.getDisplayName(), Snackbar.LENGTH_SHORT).show();
                 }
@@ -314,5 +317,32 @@ public class MainActivity extends AppCompatActivity implements
                 Log.e(TAG, "Oops something went wrong :|");
             }
         }
+    }
+
+    private void signInUser(String token) {
+        Map<String, String> tokenParams = new HashMap<>();
+        tokenParams.put("token", token);
+
+        JsonRequest authRequest = new JsonRequest(Request.Method.POST, "auth.php", tokenParams,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "SUCCESSFULLY AUTHENTICATED ON THE SERVER");
+                        try {
+                            Log.v(TAG, response.getJSONObject("response").toString());
+                        } catch (JSONException e) {
+                            Log.e(TAG, e.toString());
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                        Log.e(TAG, "Error in authenticating? " + error.getMessage());
+                    }
+                });
+
+        queue.add(authRequest);
     }
 }

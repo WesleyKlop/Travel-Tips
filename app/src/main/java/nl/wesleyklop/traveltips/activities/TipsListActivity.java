@@ -13,7 +13,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
@@ -22,6 +21,7 @@ import java.util.Map;
 
 import nl.wesleyklop.traveltips.JsonRequest;
 import nl.wesleyklop.traveltips.R;
+import nl.wesleyklop.traveltips.ReqQueue;
 
 public class TipsListActivity extends AppCompatActivity {
     public final static String TAG = "TipsListActivity";
@@ -39,7 +39,8 @@ public class TipsListActivity extends AppCompatActivity {
             Log.e(TAG, e.getMessage());
         }
 
-        requestQueue = Volley.newRequestQueue(this);
+        requestQueue = ReqQueue.getInstance(getApplicationContext())
+                .getRequestQueue();
 
         Intent currIntent = getIntent();
         id = currIntent.getStringExtra("id");
