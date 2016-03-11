@@ -51,11 +51,13 @@ public class MainActivity extends AppCompatActivity implements
     public static final String TAG = "MainActivity";
 
     private static final int RC_SIGN_IN = 2428;
+    public static ListAdapter countryListAdapter = null;
+    private static GoogleApiClient mGoogleApiClient = null;
+    private static ArrayList<HashMap<String, String>> countryList = new ArrayList<>();
+    private static boolean isUserLoggedIn = false;
+    private static GoogleSignInAccount googleAccount = null;
     protected RequestQueue queue;
-    GoogleApiClient mGoogleApiClient;
     private ListView mCountryListView;
-    private ArrayList<HashMap<String, String>> countryList = new ArrayList<>();
-    private boolean isUserLoggedIn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,32 +76,41 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        queue = ReqQueue.getInstance(getApplicationContext())
-                .getRequestQueue();
+        queue = ReqQueue.getRequestQueue(getApplicationContext());
 
         populateListView();
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestIdToken(getString(R.string.server_client_id))
-                .build();
+        if (mGoogleApiClient == null) {
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .requestIdToken(getString(R.string.server_client_id))
+                    .build();
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this, this)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .build();
+            if (!mGoogleApiClient.isConnected())
+                mGoogleApiClient.connect();
+        }
 
-        OptionalPendingResult<GoogleSignInResult> pendingSignInResult =
-                Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (pendingSignInResult.isDone()) {
-            handleSignInResult(pendingSignInResult.get(), true);
-        } else {
-            pendingSignInResult.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(@NonNull GoogleSignInResult result) {
-                    handleSignInResult(result, true);
-                }
-            });
+        startSilentAuthentication();
+    }
+
+    private void startSilentAuthentication() {
+        if (googleAccount == null) {
+            OptionalPendingResult<GoogleSignInResult> pendingSignInResult =
+                    Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+            if (pendingSignInResult.isDone()) {
+                handleSignInResult(pendingSignInResult.get(), true);
+            } else {
+                pendingSignInResult.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                    @Override
+                    public void onResult(@NonNull GoogleSignInResult result) {
+                        handleSignInResult(result, true);
+                    }
+                });
+            }
         }
     }
 
@@ -195,73 +206,93 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void populateListView() {
-        JsonRequest countryListRequest = new JsonRequest(Request.Method.GET, "json.php", getCountryParams(),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            Log.d(TAG, "Response status: " + response.getString("status"));
-                        } catch (JSONException e) {
-                            Log.e(TAG, e.toString());
-                        }
-
-                        JSONArray data = new JSONArray();
-                        try {
-                            data = response.getJSONArray("response");
-                        } catch (JSONException e) {
-                            Log.e(TAG, e.toString());
-                        }
-
-                        for (int i = 0; i < data.length(); i++) {
-                            String countryName = "";
-                            String countryTips = "";
-                            String countryId = "";
+        if (countryListAdapter == null) {
+            Log.d(TAG, "Fetching countryies from server...");
+            JsonRequest countryListRequest = new JsonRequest(Request.Method.GET, "json.php", getCountryParams(),
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
                             try {
-                                // Get the JSONObject for the current row
-                                JSONObject currRow = data.getJSONObject(i);
-                                //Log.v(TAG, currRow.toString());
-                                // Fetch the country name from the object
-                                countryName = currRow.getString("Name");
-                                countryTips = String.valueOf(currRow.getInt("TipsCount"));
-                                countryId = currRow.getString("CountryId");
+                                Log.d(TAG, "Response status: " + response.getString("status"));
                             } catch (JSONException e) {
                                 Log.e(TAG, e.toString());
                             }
 
-                            // Create a tmp HashMap that holds the value like "key" => "value"
-                            HashMap<String, String> map = new HashMap<>();
-                            // Add the "key", "value" to the HashMap
-                            map.put("country", countryName);
-                            map.put("tips", countryTips);
-                            map.put("id", countryId);
-                            // Add the tmp HashMap to the global list
-                            countryList.add(map);
+                            JSONArray data = new JSONArray();
+                            try {
+                                data = response.getJSONArray("response");
+                            } catch (JSONException e) {
+                                Log.e(TAG, e.toString());
+                            }
+
+                            for (int i = 0; i < data.length(); i++) {
+                                String countryName = "";
+                                String countryTips = "";
+                                String countryId = "";
+                                try {
+                                    // Get the JSONObject for the current row
+                                    JSONObject currRow = data.getJSONObject(i);
+                                    //Log.v(TAG, currRow.toString());
+                                    // Fetch the country name from the object
+                                    countryName = currRow.getString("Name");
+                                    countryTips = String.valueOf(currRow.getInt("TipsCount"));
+                                    countryId = currRow.getString("CountryId");
+                                } catch (JSONException e) {
+                                    Log.e(TAG, e.toString());
+                                }
+
+                                // Create a tmp HashMap that holds the value like "key" => "value"
+                                HashMap<String, String> map = new HashMap<>();
+                                // Add the "key", "value" to the HashMap
+                                map.put("country", countryName);
+                                map.put("tips", countryTips);
+                                map.put("id", countryId);
+                                // Add the tmp HashMap to the global list
+                                countryList.add(map);
+                            }
+
+                            // Create a new listAdapter with the countryList, the layout for the list item and two arrays that hold the key and list item id to bind the value to
+                            countryListAdapter = new SimpleAdapter(MainActivity.this,
+                                    countryList,
+                                    R.layout.country_list_item,
+                                    new String[]{"country", "tips"},
+                                    new int[]{R.id.countryName, R.id.countryTips}
+                            );
+
+                            setCountryListViewAdapter();
                         }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Snackbar.make(findViewById(R.id.MainActivity), "Unable to fetch countries", Snackbar.LENGTH_LONG).show();
+                            Log.e(TAG, error.toString());
+                        }
+                    }
+            );
+            queue.add(countryListRequest);
+        } else {
+            setCountryListViewAdapter();
+        }
+    }
 
-                        // Create a new listAdapter with the countryList, the layout for the list item and two arrays that hold the key and list item id to bind the value to
-                        ListAdapter listAdapter = new SimpleAdapter(MainActivity.this,
-                                countryList,
-                                R.layout.country_list_item,
-                                new String[]{"country", "tips"},
-                                new int[]{R.id.countryName, R.id.countryTips}
-                        );
+    private void setCountryListViewAdapter() {
+        // Set the adapter on the ListView
+        mCountryListView.setAdapter(countryListAdapter);
+        // Add an event listener shows you a SnackBar with the value of the ListItem you clicked on
+        mCountryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "User clicked: " + countryList.get(+position).toString());
+                String clickedCountry = countryList.get(+position).get("country");
+                String countryId = countryList.get(+position).get("id");
+                String countryTips = countryList.get(+position).get("tips");
 
-                        // Set the adapter on the ListView
-                        mCountryListView.setAdapter(listAdapter);
-                        // Add an event listener shows you a SnackBar with the value of the ListItem you clicked on
-                        mCountryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                Log.d(TAG, "User clicked: " + countryList.get(+position).toString());
-                                String clickedCountry = countryList.get(+position).get("country");
-                                String countryId = countryList.get(+position).get("id");
-                                String countryTips = countryList.get(+position).get("tips");
-
-                                Intent tipsListActivity = new Intent(parent.getContext(), TipsListActivity.class);
-                                tipsListActivity.putExtra("name", clickedCountry);
-                                tipsListActivity.putExtra("id", countryId);
-                                tipsListActivity.putExtra("tips", countryTips);
-                                startActivity(tipsListActivity);
+                Intent tipsListActivity = new Intent(parent.getContext(), TipsListActivity.class);
+                tipsListActivity.putExtra("name", clickedCountry);
+                tipsListActivity.putExtra("id", countryId);
+                tipsListActivity.putExtra("tips", countryTips);
+                startActivity(tipsListActivity);
                                 /*Snackbar.make(view, "You clicked on " + clickedCountry + " with ID " + countryId + "and " + countryTips + " tips.", Snackbar.LENGTH_SHORT)
                                         .setAction("OK", new View.OnClickListener() {
                                             @Override
@@ -269,19 +300,8 @@ public class MainActivity extends AppCompatActivity implements
                                                 // Nothing, just emptiness and depression
                                             }
                                         }).show();*/
-                            }
-                        });
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Snackbar.make(findViewById(R.id.MainActivity), "Unable to fetch countries", Snackbar.LENGTH_LONG).show();
-                        Log.e(TAG, error.toString());
-                    }
-                }
-        );
-        queue.add(countryListRequest);
+            }
+        });
     }
 
     private Map<String, String> getCountryParams() {
@@ -315,22 +335,25 @@ public class MainActivity extends AppCompatActivity implements
     private void handleSignInResult(GoogleSignInResult result, boolean isAutoSignIn) {
         Log.d(TAG, "handleSignInResult is success: " + result.isSuccess());
         if (result.isSuccess()) {
-            this.isUserLoggedIn = true;
+            isUserLoggedIn = true;
             invalidateOptionsMenu();
             // Show authenticated UI
-            GoogleSignInAccount account = result.getSignInAccount();
+            googleAccount = result.getSignInAccount();
 
-            if (account != null) {
-                Log.d(TAG, account.getDisplayName() + " is now logged in");
+            if (googleAccount != null) {
+                Log.d(TAG, googleAccount.getDisplayName() + " is now logged in");
 
-                signInUser(account.getIdToken());
+                signInUser(googleAccount.getIdToken());
 
                 if (isAutoSignIn) {
-                    Snackbar.make(findViewById(R.id.MainActivity), "Welcome back " + account.getDisplayName(), Snackbar.LENGTH_SHORT).show();
+                    Log.v(TAG, "Did silent sign in");
+                    //Snackbar.make(findViewById(R.id.MainActivity), "Welcome back " + googleAccount.getDisplayName(), Snackbar.LENGTH_SHORT).show();
                 }
             } else {
                 Log.e(TAG, "Oops something went wrong :|");
             }
+        } else {
+            Log.w(TAG, "GoogleSignInResult is false");
         }
     }
 

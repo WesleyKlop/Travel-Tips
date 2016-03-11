@@ -6,6 +6,9 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+/**
+ * Singleton class for storing the request queue and other data
+ */
 public class ReqQueue {
     private static ReqQueue mInstance;
     private static Context mCtx;
@@ -14,6 +17,10 @@ public class ReqQueue {
     private ReqQueue(Context context) {
         mCtx = context;
         mRequestQueue = getRequestQueue();
+    }
+
+    public static RequestQueue getRequestQueue(Context context) {
+        return getInstance(context).getRequestQueue();
     }
 
     public static synchronized ReqQueue getInstance(Context context) {
