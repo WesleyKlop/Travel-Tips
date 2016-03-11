@@ -7,4 +7,5 @@
     <string name="server_client_id">841821378714-3kiqke67jfoqo9d3r5qfpn0clug5lr3l.apps.googleusercontent.com</string>
     <string name="tips_listview_header_placeholder">COUNTRY NAME HERE</string>
     <string name="action_logout">Sign out</string>
+    <string name="api_endpoint">http://ap24-28.ict-lab.nl/api/json.php</string>
 </resources>

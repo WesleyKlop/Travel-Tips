@@ -22,7 +22,9 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
+    //noinspection GradleDependency
     compile 'com.android.support:appcompat-v7:23.2.0'
+    //noinspection GradleDependency
     compile 'com.android.support:design:23.2.0'
     compile project(':volley')
     compile 'com.google.android.gms:play-services-auth:8.4.0'

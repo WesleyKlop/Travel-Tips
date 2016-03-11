@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.wesleyklop.traveltips.ApiHelper;
 import nl.wesleyklop.traveltips.JsonRequest;
 import nl.wesleyklop.traveltips.R;
 import nl.wesleyklop.traveltips.ReqQueue;
@@ -90,9 +91,10 @@ public class MainActivity extends AppCompatActivity implements
                     .enableAutoManage(this, this)
                     .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                     .build();
-            if (!mGoogleApiClient.isConnected())
-                mGoogleApiClient.connect();
         }
+
+        if (!mGoogleApiClient.isConnected())
+            mGoogleApiClient.connect();
 
         startSilentAuthentication();
     }
@@ -208,68 +210,69 @@ public class MainActivity extends AppCompatActivity implements
     public void populateListView() {
         if (countryListAdapter == null) {
             Log.d(TAG, "Fetching countryies from server...");
-            JsonRequest countryListRequest = new JsonRequest(Request.Method.GET, "json.php", getCountryParams(),
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                Log.d(TAG, "Response status: " + response.getString("status"));
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.toString());
-                            }
 
-                            JSONArray data = new JSONArray();
-                            try {
-                                data = response.getJSONArray("response");
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.toString());
-                            }
+            JsonRequest countryListRequest = new ApiHelper(getApplicationContext())
+                    .getAllCountries(
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        Log.d(TAG, "Response status: " + response.getString("status"));
+                                    } catch (JSONException e) {
+                                        Log.e(TAG, e.toString());
+                                    }
 
-                            for (int i = 0; i < data.length(); i++) {
-                                String countryName = "";
-                                String countryTips = "";
-                                String countryId = "";
-                                try {
-                                    // Get the JSONObject for the current row
-                                    JSONObject currRow = data.getJSONObject(i);
-                                    //Log.v(TAG, currRow.toString());
-                                    // Fetch the country name from the object
-                                    countryName = currRow.getString("Name");
-                                    countryTips = String.valueOf(currRow.getInt("TipsCount"));
-                                    countryId = currRow.getString("CountryId");
-                                } catch (JSONException e) {
-                                    Log.e(TAG, e.toString());
+                                    JSONArray data = new JSONArray();
+                                    try {
+                                        data = response.getJSONArray("response");
+                                    } catch (JSONException e) {
+                                        Log.e(TAG, e.toString());
+                                    }
+
+                                    for (int i = 0; i < data.length(); i++) {
+                                        String countryName = "";
+                                        String countryTips = "";
+                                        String countryId = "";
+                                        try {
+                                            // Get the JSONObject for the current row
+                                            JSONObject currRow = data.getJSONObject(i);
+                                            //Log.v(TAG, currRow.toString());
+                                            // Fetch the country name from the object
+                                            countryName = currRow.getString("Name");
+                                            countryTips = String.valueOf(currRow.getInt("TipsCount"));
+                                            countryId = currRow.getString("CountryId");
+                                        } catch (JSONException e) {
+                                            Log.e(TAG, e.toString());
+                                        }
+
+                                        // Create a tmp HashMap that holds the value like "key" => "value"
+                                        HashMap<String, String> map = new HashMap<>();
+                                        // Add the "key", "value" to the HashMap
+                                        map.put("country", countryName);
+                                        map.put("tips", countryTips);
+                                        map.put("id", countryId);
+                                        // Add the tmp HashMap to the global list
+                                        countryList.add(map);
+                                    }
+
+                                    // Create a new listAdapter with the countryList, the layout for the list item and two arrays that hold the key and list item id to bind the value to
+                                    countryListAdapter = new SimpleAdapter(MainActivity.this,
+                                            countryList,
+                                            R.layout.country_list_item,
+                                            new String[]{"country", "tips"},
+                                            new int[]{R.id.countryName, R.id.countryTips}
+                                    );
+
+                                    setCountryListViewAdapter();
                                 }
-
-                                // Create a tmp HashMap that holds the value like "key" => "value"
-                                HashMap<String, String> map = new HashMap<>();
-                                // Add the "key", "value" to the HashMap
-                                map.put("country", countryName);
-                                map.put("tips", countryTips);
-                                map.put("id", countryId);
-                                // Add the tmp HashMap to the global list
-                                countryList.add(map);
-                            }
-
-                            // Create a new listAdapter with the countryList, the layout for the list item and two arrays that hold the key and list item id to bind the value to
-                            countryListAdapter = new SimpleAdapter(MainActivity.this,
-                                    countryList,
-                                    R.layout.country_list_item,
-                                    new String[]{"country", "tips"},
-                                    new int[]{R.id.countryName, R.id.countryTips}
-                            );
-
-                            setCountryListViewAdapter();
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Snackbar.make(findViewById(R.id.MainActivity), "Unable to fetch countries", Snackbar.LENGTH_LONG).show();
-                            Log.e(TAG, error.toString());
-                        }
-                    }
-            );
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Snackbar.make(findViewById(R.id.MainActivity), "Unable to fetch countries", Snackbar.LENGTH_LONG).show();
+                                    Log.e(TAG, error.toString());
+                                }
+                            });
             queue.add(countryListRequest);
         } else {
             setCountryListViewAdapter();
@@ -293,27 +296,13 @@ public class MainActivity extends AppCompatActivity implements
                 tipsListActivity.putExtra("id", countryId);
                 tipsListActivity.putExtra("tips", countryTips);
                 startActivity(tipsListActivity);
-                                /*Snackbar.make(view, "You clicked on " + clickedCountry + " with ID " + countryId + "and " + countryTips + " tips.", Snackbar.LENGTH_SHORT)
-                                        .setAction("OK", new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                // Nothing, just emptiness and depression
-                                            }
-                                        }).show();*/
             }
         });
     }
 
-    private Map<String, String> getCountryParams() {
-        Map<String, String> params = new HashMap<>();
-        params.put("action", "countries");
-
-        return params;
-    }
-
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Log.w(TAG, "Connection failed? " + connectionResult.toString());
     }
 
     private void signIn() {
