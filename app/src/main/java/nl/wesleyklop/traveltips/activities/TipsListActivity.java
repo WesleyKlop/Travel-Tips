@@ -40,12 +40,6 @@ public class TipsListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tips_list);
-        try {
-            //noinspection ConstantConditions
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        } catch (NullPointerException e) {
-            Log.e(TAG, e.getMessage());
-        }
 
         requestQueue = ReqQueue.getInstance(getApplicationContext())
                 .getRequestQueue();

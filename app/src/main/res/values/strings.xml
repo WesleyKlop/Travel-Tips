@@ -8,4 +8,9 @@
     <string name="tips_listview_header_placeholder">COUNTRY NAME HERE</string>
     <string name="action_logout">Sign out</string>
     <string name="api_endpoint">http://ap24-28.ict-lab.nl/api/json.php</string>
+    <string name="header_tip_add">Add tip</string>
+    <string name="hint_tip_title">Title</string>
+    <string name="hint_tip_message">Message</string>
+    <string name="hint_tip_submit">Submit Tip</string>
+    <string name="hint_tip_country">Country</string>
 </resources>
