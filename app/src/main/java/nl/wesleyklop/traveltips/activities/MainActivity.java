@@ -343,7 +343,8 @@ public class MainActivity extends AppCompatActivity implements
                 Log.e(TAG, "Oops something went wrong :|");
             }
         } else {
-            Log.w(TAG, "GoogleSignInResult is false");
+            Log.e(TAG, "GoogleSignInResult is false");
+            Log.e(TAG, result.getStatus().toString());
         }
     }
 

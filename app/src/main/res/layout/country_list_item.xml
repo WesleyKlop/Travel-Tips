@@ -11,7 +11,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
-        android:layout_toStartOf="@+id/countryTips"
         android:ellipsize="end"
         android:singleLine="true"
         android:text="@string/country_listitem_placeholder"
@@ -22,13 +21,11 @@
         android:id="@+id/countryTips"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:background="@drawable/rounded_corner"
-        android:gravity="center_vertical"
+        android:layout_toEndOf="@+id/countryName"
+        android:gravity="center"
         android:paddingEnd="12dp"
         android:paddingStart="12dp"
         android:text="0"
-        android:textColor="@color/text_white"
-        android:textSize="@dimen/listitem_text_size" />
+        android:textColor="@color/text_secondary" />
 </RelativeLayout>
