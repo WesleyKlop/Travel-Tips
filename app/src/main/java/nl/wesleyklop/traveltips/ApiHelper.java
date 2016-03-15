@@ -24,9 +24,18 @@ public class ApiHelper {
         endPoint = context.getString(R.string.api_endpoint);
     }
 
+    public ApiHelper(String endPoint) {
+        ApiHelper.endPoint = endPoint;
+    }
+
     public JsonRequest post(String action, Map<String, String> params, Response.Listener<JSONObject> responseListener, Response.ErrorListener errorListener) {
         params.put("action", action);
 
+        lastRequest = new JsonRequest(Request.Method.POST, endPoint, params, responseListener, errorListener);
+        return lastRequest;
+    }
+
+    public JsonRequest post(Map<String, String> params, Response.Listener<JSONObject> responseListener, Response.ErrorListener errorListener) {
         lastRequest = new JsonRequest(Request.Method.POST, endPoint, params, responseListener, errorListener);
         return lastRequest;
     }
@@ -57,6 +66,19 @@ public class ApiHelper {
         params.put("country", countryId);
 
         lastRequest = get("tips", params, responseListener, errorListener);
+        return lastRequest;
+    }
+
+    public JsonRequest postTip(String countryName, String title, String message,
+                               Response.Listener<JSONObject> responseListener, Response.ErrorListener errorListener) {
+        // Make params map
+        Map<String, String> params = new HashMap<>();
+        params.put("action", "tips");
+        params.put("country", countryName);
+        params.put("title", title);
+        params.put("message", message);
+
+        lastRequest = post(params, responseListener, errorListener);
         return lastRequest;
     }
 }
