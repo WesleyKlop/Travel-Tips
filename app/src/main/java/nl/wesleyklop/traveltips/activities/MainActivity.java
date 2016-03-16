@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mGoogleApiClient == null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestEmail()
-                    .requestIdToken(getString(R.string.server_client_id))
+                    .requestIdToken(MainActivity.this.getResources().getString(R.string.server_client_id))
                     .build();
 
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -323,7 +323,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleSignInResult(GoogleSignInResult result, boolean isAutoSignIn) {
-        Log.d(TAG, "handleSignInResult is success: " + result.isSuccess());
         if (result.isSuccess()) {
             isUserLoggedIn = true;
             invalidateOptionsMenu();
@@ -367,7 +366,6 @@ public class MainActivity extends AppCompatActivity implements
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
                         Log.e(TAG, "Error in authenticating? " + error.getMessage());
                     }
                 });
