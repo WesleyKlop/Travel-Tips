@@ -2,6 +2,7 @@ package nl.wesleyklop.traveltips;
 
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class JsonRequest extends Request<JSONObject> {
     public final static String TAG = "JsonRequest";
     static String mBaseUrl = "http://ap24-28.ict-lab.nl/api/";
+    private static String cookies = "";
     private int mMethod;
     private String mUrl;
     private Map<String, String> mParams;
@@ -57,7 +59,7 @@ public class JsonRequest extends Request<JSONObject> {
     }
 
     public static Map<String, String> noParams() {
-        return new HashMap<String, String>();
+        return new HashMap<>();
     }
 
     @Override
@@ -82,12 +84,30 @@ public class JsonRequest extends Request<JSONObject> {
     }
 
     @Override
-    protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
+    public Map<String, String> getHeaders() throws AuthFailureError {
+        Map<String, String> headers = new HashMap<>();
+
+        if (!cookies.equals(""))
+            headers.put("Cookie", cookies);
+
+        return headers;
+    }
+
+    @Override
+    protected Map<String, String> getParams() throws AuthFailureError {
         return mParams;
     }
 
     @Override
     protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+        Map headers = response.headers;
+        try {
+            String cookie = headers.get("Set-Cookie").toString();
+            saveCookies(cookie);
+        } catch (NullPointerException ne) {
+            //Log.d(TAG, "No Set-Cookie header is here");
+            //Log.v(TAG, "Did get these headers: " + headers.toString());
+        }
         try {
             String jsonString = new String(response.data,
                     HttpHeaderParser.parseCharset(response.headers));
@@ -98,6 +118,14 @@ public class JsonRequest extends Request<JSONObject> {
         } catch (JSONException je) {
             return Response.error(new ParseError(je));
         }
+    }
+
+    private void saveCookies(String cookie) {
+        if (cookie == null) {
+            return;
+        }
+        Log.d(TAG, "Cookie = " + cookie);
+        cookies = cookie;
     }
 
     @Override

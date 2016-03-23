@@ -23,10 +23,10 @@ import nl.wesleyklop.traveltips.R;
 import nl.wesleyklop.traveltips.ReqQueue;
 
 /*
- * TODO: implement functionality
  * TODO: button hover/onclick styling
  * TODO: implement button disabled/enabled
  * TODO: verify country name using countryAdapter
+ * TODO: convert country name -> id OR server side?
  */
 public class AddTipActivity extends AppCompatActivity implements View.OnClickListener {
     public final static String TAG = "AddTipActivity";
