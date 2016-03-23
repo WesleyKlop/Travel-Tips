@@ -10,52 +10,47 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/header_tip_add"
-        android:textColor="@color/colorPrimary"
-        android:textStyle="bold" />
-
     <EditText
         android:id="@+id/tipTitle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView"
+        android:layout_alignParentTop="true"
         android:gravity="top|start"
         android:hint="@string/hint_tip_title"
+        android:inputType="textCapSentences"
         android:maxLength="144"
-        android:maxLines="4" />
+        android:maxLines="4"
+        android:nextFocusDown="@+id/tipCountry"
+        android:nextFocusForward="@+id/tipCountry" />
 
-    <EditText
-        android:id="@+id/tipMessage"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/tipTitle"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/tipTitle"
-        android:gravity="top|start"
-        android:hint="@string/hint_tip_message"
-        android:inputType="textMultiLine"
-        android:lines="6"
-        android:maxLines="6"
-        android:minLines="2"
-        android:scrollbars="vertical" />
-
-    <EditText
+    <android.support.v7.widget.AppCompatAutoCompleteTextView
         android:id="@+id/tipCountry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/tipMessage"
+        android:layout_below="@+id/tipTitle"
         android:hint="@string/hint_tip_country"
+        android:inputType="textNoSuggestions"
         android:lines="1"
+        android:nextFocusDown="@+id/tipMessage"
+        android:nextFocusForward="@+id/tipMessage"
         android:singleLine="true" />
+
+    <EditText
+        android:id="@+id/tipMessage"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/tipCountry"
+        android:gravity="top|start"
+        android:hint="@string/hint_tip_message"
+        android:inputType="textCapSentences|textMultiLine"
+        android:lines="6"
+        android:maxLines="6"
+        android:minLines="2"
+        android:nextFocusForward="@+id/action_send"
+        android:scrollbars="vertical" />
 
 </RelativeLayout>

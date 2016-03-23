@@ -2,13 +2,16 @@ package nl.wesleyklop.traveltips.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -31,9 +34,9 @@ import nl.wesleyklop.traveltips.ReqQueue;
  * TODO: convert country name -> id OR server side?
  */
 public class AddTipActivity extends AppCompatActivity {
+
     public final static String TAG = "AddTipActivity";
     private ArrayList<HashMap<String, String>> countryList = null;
-    private SimpleAdapter countryAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,18 +51,44 @@ public class AddTipActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         @SuppressWarnings("unchecked")
-        ArrayList<HashMap<String, String>> countryList = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("countrylist");
+        ArrayList<HashMap<String, String>> countryList = (ArrayList<HashMap<String, String>>) intent.getSerializableExtra("countryList");
         this.countryList = countryList;
 
-        countryAdapter = getCountryListAsAdapter();
+        AutoCompleteTextView autoComplete = (AutoCompleteTextView) findViewById(R.id.tipCountry);
+        autoComplete.setThreshold(1);
+        autoComplete.setAdapter(getArrayAdapter());
     }
 
-    private SimpleAdapter getCountryListAsAdapter() {
-        return new SimpleAdapter(AddTipActivity.this,
-                countryList,
-                R.layout.country_list_item,
-                new String[]{"country", "tips"},
-                new int[]{R.id.countryName, R.id.countryTips}
+    private int getIdFromCountryName(String country) {
+        for (HashMap<String, String> temp : countryList) {
+            if (temp.get("country").equals(country)) {
+                try {
+                    return Integer.parseInt(temp.get("id"));
+                } catch (NumberFormatException nEx) {
+                    Log.wtf(TAG, "Country id is not parsable as int!?");
+                }
+            }
+        }
+        return -1;
+    }
+
+
+    private ArrayAdapter<String> getArrayAdapter() {
+        ArrayList<String> countryNames = new ArrayList<>();
+        if (countryList == null) {
+            Log.w(TAG, "countryList == null!");
+            return null;
+        }
+
+        for (int i = 0; i < countryList.size(); i++) {
+            HashMap<String, String> temp = countryList.get(i);
+            countryNames.add(temp.get("country"));
+        }
+
+        return new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                countryNames
         );
     }
 
@@ -90,15 +119,26 @@ public class AddTipActivity extends AppCompatActivity {
         String country = ((EditText) findViewById(R.id.tipCountry)).getText().toString(),
                 title = ((EditText) findViewById(R.id.tipTitle)).getText().toString(),
                 message = ((EditText) findViewById(R.id.tipMessage)).getText().toString();
+        int countryId;
+
+        // Validate country
+        if ((countryId = getIdFromCountryName(country)) == -1) {
+            Toast.makeText(AddTipActivity.this, "Invalid country", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "CountryId of " + country + " is " + String.valueOf(countryId));
 
         // Create request
         RequestQueue queue = ReqQueue.getRequestQueue(getApplicationContext());
         ApiHelper helper = new ApiHelper(getApplicationContext());
-        JsonRequest postRequest = helper.postTip(country, title, message,
+        JsonRequest postRequest = helper.postTip(String.valueOf(countryId), title, message,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, response.toString());
+                        Toast.makeText(AddTipActivity.this, "Successfully added your tip!", Toast.LENGTH_LONG).show();
+                        NavUtils.navigateUpFromSameTask(AddTipActivity.this);
                     }
                 },
                 new Response.ErrorListener() {
@@ -111,9 +151,4 @@ public class AddTipActivity extends AppCompatActivity {
         // Submit request
         queue.add(postRequest);
     }
-
-    /*private void filterSearchView(String query) {
-        SearchView countrySearchView = (SearchView) findViewById(R.id.searchCountryView);
-        Log.v(TAG, "Searchquery: " + query);
-    }*/
 }
