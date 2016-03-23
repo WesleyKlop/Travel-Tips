@@ -15,7 +15,6 @@
         android:id="@+id/tips_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:text="@string/tips_listview_header_placeholder"
         android:textColor="@color/colorPrimary"
         android:textStyle="bold" />
@@ -25,5 +24,5 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:drawSelectorOnTop="false" />
+        android:paddingTop="@dimen/listview_padding_top" />
 </LinearLayout>

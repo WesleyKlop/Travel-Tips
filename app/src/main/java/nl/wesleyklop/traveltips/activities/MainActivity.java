@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements
     private static GoogleSignInAccount googleAccount = null;
     protected RequestQueue queue;
     private ListView mCountryListView;
+    private boolean doStartAddTipActivityOnResult = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,9 +74,15 @@ public class MainActivity extends AppCompatActivity implements
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent addTipActivity = new Intent(view.getContext(), AddTipActivity.class);
-                addTipActivity.putExtra("countryList", countryList);
-                startActivity(addTipActivity);
+                if (isUserLoggedIn) {
+                    Intent addTipActivity = new Intent(view.getContext(), AddTipActivity.class);
+                    addTipActivity.putExtra("countryList", countryList);
+                    startActivity(addTipActivity);
+                } else {
+                    Toast.makeText(getApplicationContext(), getString(R.string.not_logged_in_warning), Toast.LENGTH_LONG).show();
+                    doStartAddTipActivityOnResult = true;
+                    startSignIn();
+                }
             }
         });
 
@@ -154,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements
                 Log.v(TAG, "Settings..");
                 return true;
             case R.id.action_login:
-                signIn();
+                startSignIn();
                 return true;
             case R.id.action_logout:
                 if (mGoogleApiClient.isConnected()) {
@@ -283,6 +291,8 @@ public class MainActivity extends AppCompatActivity implements
     private void setCountryListViewAdapter() {
         // Set the adapter on the ListView
         mCountryListView.setAdapter(countryListAdapter);
+
+        ((SimpleAdapter) countryListAdapter).getFilter().filter("N");        //FILTER WERKT DAMNNNNN
         // Add an event listener shows you a SnackBar with the value of the ListItem you clicked on
         mCountryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -306,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements
         Log.w(TAG, "Connection failed? " + connectionResult.toString());
     }
 
-    private void signIn() {
+    private void startSignIn() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -358,9 +368,16 @@ public class MainActivity extends AppCompatActivity implements
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, "SUCCESSFULLY AUTHENTICATED ON THE SERVER");
                         try {
-                            Log.v(TAG, response.getJSONObject("response").toString());
+                            if (response.getString("status").equals("success")) {
+                                if (doStartAddTipActivityOnResult) {
+                                    doStartAddTipActivityOnResult = false;
+                                    Intent addTipActivity = new Intent(getApplicationContext(), AddTipActivity.class);
+                                    addTipActivity.putExtra("countryList", countryList);
+                                    startActivity(addTipActivity);
+                                }
+                            }
                         } catch (JSONException e) {
-                            Log.e(TAG, e.toString());
+                            Log.e(TAG, e.getMessage());
                         }
                     }
                 },

@@ -6,6 +6,6 @@
     <color name="text_primary">#000000</color>
     <color name="text_white">#ffffffff</color>
     <color name="text_secondary">#8A000000</color>
-    <color name="colorBackground">#FAFAFA</color>
+    <color name="colorBackground">#FFFFFF</color>
     <color name="colorBackgroundWhite">#FFFFFF</color>
 </resources>

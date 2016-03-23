@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/listitem_height"
-    android:background="@color/colorBackgroundWhite"
     android:paddingLeft="@dimen/listitem_horizontal_padding"
     android:paddingRight="@dimen/listitem_horizontal_padding">
 
@@ -22,11 +21,9 @@
         android:id="@+id/countryTips"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
+        android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@+id/countryName"
         android:gravity="center"
-        android:paddingEnd="12dp"
-        android:paddingStart="12dp"
         android:text="0"
         android:textColor="@color/text_secondary" />
 </RelativeLayout>

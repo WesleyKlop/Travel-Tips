@@ -13,4 +13,5 @@
     <string name="hint_tip_message">Message</string>
     <string name="hint_tip_submit">Submit Tip</string>
     <string name="hint_tip_country">Country</string>
+    <string name="not_logged_in_warning">You need to be logged in to do that.</string>
 </resources>

@@ -23,7 +23,7 @@
         android:id="@+id/countryListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:choiceMode="singleChoice"
         android:divider="#00000000"
         android:paddingTop="@dimen/listview_padding_top" />
+
 </LinearLayout>
