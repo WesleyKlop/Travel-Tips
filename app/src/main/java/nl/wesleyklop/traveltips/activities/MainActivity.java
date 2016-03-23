@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -48,7 +49,8 @@ import nl.wesleyklop.traveltips.R;
 import nl.wesleyklop.traveltips.ReqQueue;
 
 public class MainActivity extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        SearchView.OnQueryTextListener {
 
     public static final String TAG = "MainActivity";
 
@@ -125,29 +127,16 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-/*
-    @Override
-    public void onStart() {
-        super.onStart();
-
-    }
-*/
-
-    protected Map<String, String> getSearchParams() {
-        Map<String, String> params = new HashMap<>();
-        String searchQuery = "";
-
-        // TODO: add search EditText and implement it here
-
-        params.put("search", searchQuery);
-
-        return params;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        if (searchItem != null) {
+            ((SearchView) searchItem.getActionView()).setOnQueryTextListener(this);
+        }
+
         if (isUserLoggedIn) {
             menu.findItem(R.id.action_login).setVisible(false);
             menu.findItem(R.id.action_logout).setVisible(true);
@@ -291,8 +280,6 @@ public class MainActivity extends AppCompatActivity implements
     private void setCountryListViewAdapter() {
         // Set the adapter on the ListView
         mCountryListView.setAdapter(countryListAdapter);
-
-        ((SimpleAdapter) countryListAdapter).getFilter().filter("N");        //FILTER WERKT DAMNNNNN
         // Add an event listener shows you a SnackBar with the value of the ListItem you clicked on
         mCountryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -388,5 +375,17 @@ public class MainActivity extends AppCompatActivity implements
                 });
 
         queue.add(authRequest);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        ((SimpleAdapter) countryListAdapter).getFilter().filter(query);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        ((SimpleAdapter) countryListAdapter).getFilter().filter(newText);
+        return true;
     }
 }
