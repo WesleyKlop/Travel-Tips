@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -50,7 +51,8 @@ import nl.wesleyklop.traveltips.ReqQueue;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
-        SearchView.OnQueryTextListener {
+        SearchView.OnQueryTextListener,
+        SwipeRefreshLayout.OnRefreshListener {
 
     public static final String TAG = "MainActivity";
 
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements
     protected RequestQueue queue;
     private ListView mCountryListView;
     private boolean doStartAddTipActivityOnResult = false;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mCountryListView = (ListView) findViewById(R.id.countryListView);
+        mCountryListView.addHeaderView(getLayoutInflater().inflate(R.layout.header_country_list, null));
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.countryListLayout);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -159,6 +165,10 @@ public class MainActivity extends AppCompatActivity implements
                 } else {
                     Snackbar.make(findViewById(R.id.MainActivity), "Unable to sign out", Snackbar.LENGTH_SHORT).show();
                 }
+                return true;
+            case R.id.action_refresh:
+                swipeRefreshLayout.setRefreshing(true);
+                updateCountryListView();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -296,6 +306,10 @@ public class MainActivity extends AppCompatActivity implements
                 startActivity(tipsListActivity);
             }
         });
+        if (swipeRefreshLayout.isRefreshing()) {
+            ((SimpleAdapter) countryListAdapter).notifyDataSetChanged();
+            swipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     @Override
@@ -387,5 +401,16 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onQueryTextChange(String newText) {
         ((SimpleAdapter) countryListAdapter).getFilter().filter(newText);
         return true;
+    }
+
+    @Override
+    public void onRefresh() {
+        updateCountryListView();
+    }
+
+    private void updateCountryListView() {
+        countryList = new ArrayList<>();
+        countryListAdapter = null;
+        populateListView();
     }
 }

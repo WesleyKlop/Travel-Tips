@@ -6,24 +6,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activities.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:text="@string/country_listview_header"
-        android:textColor="@color/colorPrimary"
-        android:textStyle="bold" />
-
-    <ListView
-        android:id="@+id/countryListView"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/countryListLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:divider="#00000000"
-        android:paddingTop="@dimen/listview_padding_top" />
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/countryListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="#00000000" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
 </LinearLayout>

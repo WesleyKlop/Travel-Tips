@@ -15,4 +15,6 @@
     <string name="hint_tip_country">Country</string>
     <string name="not_logged_in_warning">You need to be logged in to do that.</string>
     <string name="action_add_tip_title">Add tip</string>
+    <string name="action_search">Search</string>
+    <string name="action_refresh">Refresh</string>
 </resources>
