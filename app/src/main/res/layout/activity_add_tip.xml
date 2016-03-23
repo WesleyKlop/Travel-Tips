@@ -1,84 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:fitsSystemWindows="true"
     tools:context="nl.wesleyklop.traveltips.activities.AddTipActivity">
 
-
-    <!--SearchView
-        android:layout_width="wrap_content"
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/searchCountryView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:queryHint="@string/country_search_text" /-->
+        android:theme="@style/AppTheme.AppBarOverlay">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/header_tip_add"
-        android:textColor="@color/colorPrimary"
-        android:textStyle="bold" />
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-    <EditText
-        android:id="@+id/tipTitle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView"
-        android:gravity="top|start"
-        android:hint="@string/hint_tip_title"
-        android:maxLength="144"
-        android:maxLines="4" />
+    </android.support.design.widget.AppBarLayout>
 
-    <EditText
-        android:id="@+id/tipMessage"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/tipTitle"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/tipTitle"
-        android:gravity="top|start"
-        android:hint="@string/hint_tip_message"
-        android:inputType="textMultiLine"
-        android:lines="6"
-        android:maxLines="6"
-        android:minLines="2"
-        android:scrollbars="vertical" />
+    <include layout="@layout/content_add_tip" />
 
-    <EditText
-        android:id="@+id/tipCountry"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/tipMessage"
-        android:hint="@string/hint_tip_country"
-        android:lines="1"
-        android:singleLine="true" />
-
-    <Button
-        android:id="@+id/tipSubmitButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/tipCountry"
-        android:height="36dp"
-        android:background="@color/colorPrimary"
-        android:minWidth="64dp"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
-        android:text="@string/hint_tip_submit"
-        android:textColor="#4DFFFFFF" />
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>

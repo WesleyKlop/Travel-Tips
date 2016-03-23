@@ -3,8 +3,10 @@ package nl.wesleyklop.traveltips.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
 
@@ -28,7 +30,7 @@ import nl.wesleyklop.traveltips.ReqQueue;
  * TODO: verify country name using countryAdapter
  * TODO: convert country name -> id OR server side?
  */
-public class AddTipActivity extends AppCompatActivity implements View.OnClickListener {
+public class AddTipActivity extends AppCompatActivity {
     public final static String TAG = "AddTipActivity";
     private ArrayList<HashMap<String, String>> countryList = null;
     private SimpleAdapter countryAdapter = null;
@@ -37,6 +39,11 @@ public class AddTipActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_tip);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(getString(R.string.action_add_tip_title));
+        setSupportActionBar(toolbar);
+        //noinspection ConstantConditions
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
 
@@ -45,13 +52,6 @@ public class AddTipActivity extends AppCompatActivity implements View.OnClickLis
         this.countryList = countryList;
 
         countryAdapter = getCountryListAsAdapter();
-
-        findViewById(R.id.tipSubmitButton).setOnClickListener(this);
-
-        /*if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            filterSearchView(query);
-        }*/
     }
 
     private SimpleAdapter getCountryListAsAdapter() {
@@ -64,12 +64,24 @@ public class AddTipActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    public void onClick(View v) {
-        Log.d(TAG, String.valueOf(v.getId() == R.id.tipSubmitButton));
-        switch (v.getId()) {
-            case R.id.tipSubmitButton:
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_add_tip, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_send:
                 submitTip();
-                break;
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+
         }
     }
 
