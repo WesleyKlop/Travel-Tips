@@ -29,11 +29,10 @@ import nl.wesleyklop.traveltips.R;
 import nl.wesleyklop.traveltips.ReqQueue;
 
 public class TipsListActivity extends AppCompatActivity {
-    public final static String TAG = "TipsListActivity";
-
+    private final static String TAG = "TipsListActivity";
+    private final ArrayList<HashMap<String, String>> tipsListData = new ArrayList<>();
     private String id, name, tipsCount;
     private RequestQueue requestQueue;
-    private ArrayList<HashMap<String, String>> tipsListData = new ArrayList<>();
     private ListAdapter tipsListAdapter = null;
 
     @Override

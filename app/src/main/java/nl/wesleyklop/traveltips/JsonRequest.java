@@ -20,24 +20,24 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class JsonRequest extends Request<JSONObject> {
-    public final static String TAG = "JsonRequest";
-    static String mBaseUrl = "http://ap24-28.ict-lab.nl/api/";
+    private final static String TAG = "JsonRequest";
+    private static String mBaseUrl = "http://ap24-28.ict-lab.nl/api/";
     private static String cookies = "";
-    private int mMethod;
+    private final int mMethod;
+    private final Map<String, String> mParams;
+    private final Listener<JSONObject> mListener;
     private String mUrl;
-    private Map<String, String> mParams;
-    private Listener<JSONObject> mListener;
 
     /**
-     * Maakt een nieuw login request object
+     * Makes a new Login request object
      *
-     * @param method          de method voor de request bijvoorbeeld POST of GET
-     * @param url             de URL om de post request naar te doen
-     * @param params          Een <String,String> Map met parameters
-     * @param reponseListener Responselistener die iets doet met de uitkomst
-     * @param errorListener   ErrorListener die errors afhandeld
+     * @param method           the method for the request for example GET or POST
+     * @param url              the url to send the request to
+     * @param params           Een <String,String> Map met parameters
+     * @param responseListener Listener to use on the result
+     * @param errorListener    Listener for errors (404 etc.)
      */
-    public JsonRequest(int method, String url, Map<String, String> params, Listener<JSONObject> reponseListener, ErrorListener errorListener) {
+    public JsonRequest(int method, String url, Map<String, String> params, Listener<JSONObject> responseListener, ErrorListener errorListener) {
         super(method, url, errorListener);
         this.mMethod = method;
         if (url.matches("^(https?://).*")) {
@@ -47,7 +47,7 @@ public class JsonRequest extends Request<JSONObject> {
             Log.d(TAG, "New url  = " + this.mUrl);
         }
         this.mParams = params;
-        this.mListener = reponseListener;
+        this.mListener = responseListener;
     }
 
     public static String getBaseUrl() {

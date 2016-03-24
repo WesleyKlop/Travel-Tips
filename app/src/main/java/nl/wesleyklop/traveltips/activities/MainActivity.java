@@ -1,9 +1,12 @@
 package nl.wesleyklop.traveltips.activities;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -35,6 +39,19 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.holder.ImageHolder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
+import com.mikepenz.materialdrawer.util.DrawerImageLoader;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,21 +69,24 @@ import nl.wesleyklop.traveltips.ReqQueue;
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         SearchView.OnQueryTextListener,
-        SwipeRefreshLayout.OnRefreshListener {
+        SwipeRefreshLayout.OnRefreshListener,
+        Drawer.OnDrawerItemClickListener {
 
-    public static final String TAG = "MainActivity";
+    private static final String TAG = "MainActivity";
 
     private static final int RC_SIGN_IN = 2428;
-    public static ListAdapter countryListAdapter = null;
+    private static ListAdapter countryListAdapter = null;
     private static GoogleApiClient mGoogleApiClient = null;
     private static ArrayList<HashMap<String, String>> countryList = new ArrayList<>();
     private static boolean isUserLoggedIn = false;
     private static GoogleSignInAccount googleAccount = null;
-    protected RequestQueue queue;
+    private RequestQueue queue;
     private ListView mCountryListView;
     private boolean doStartAddTipActivityOnResult = false;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private AccountHeader accountHeader;
 
+    @SuppressLint("InflateParams")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,7 +133,43 @@ public class MainActivity extends AppCompatActivity implements
         if (!mGoogleApiClient.isConnected())
             mGoogleApiClient.connect();
 
+        createDrawer();
         startSilentAuthentication();
+    }
+
+    private void createDrawer() {
+        DrawerImageLoader.init(new AbstractDrawerImageLoader() {
+            @Override
+            public void set(ImageView imageView, Uri uri, Drawable placeholder) {
+                Picasso.with(imageView.getContext()).load(uri).placeholder(placeholder).into(imageView);
+            }
+
+            @Override
+            public void cancel(ImageView imageView) {
+                Picasso.with(imageView.getContext()).cancelRequest(imageView);
+            }
+        });
+
+
+        accountHeader = new AccountHeaderBuilder()
+                .withActivity(this)
+                .withHeaderBackground(new ImageHolder(getDrawable(R.drawable.img_header_background)))
+                        //.withTextColorRes(R.color.text_primary)
+                .build();
+
+
+        Drawer navigationDrawer = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar((Toolbar) findViewById(R.id.toolbar))
+                .addDrawerItems(
+                        new PrimaryDrawerItem().withName("HOLY FUCKING SHIT THAT WAS EASY"),
+                        new DividerDrawerItem(),
+                        new PrimaryDrawerItem().withName(R.string.action_settings).withIcon(GoogleMaterial.Icon.gmd_settings)
+                )
+                .withOnDrawerItemClickListener(this)
+                .withAccountHeader(accountHeader, true)
+                .withSelectedItem(-1)
+                .build();
     }
 
     private void startSilentAuthentication() {
@@ -148,6 +204,24 @@ public class MainActivity extends AppCompatActivity implements
             menu.findItem(R.id.action_logout).setVisible(true);
         }
         return true;
+    }
+
+    @Override
+    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+        Log.d(TAG, String.valueOf(position));
+        switch (position) {
+            case 0:
+                Log.d(TAG, "HOLY SHIT!?");
+                return true;
+            case 1:
+                // Divider
+                return true;
+            case 2:
+                Log.d(TAG, "SETTINGS?");
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
@@ -215,9 +289,9 @@ public class MainActivity extends AppCompatActivity implements
         return findViewById(R.id.MainActivity);
     }
 
-    public void populateListView() {
+    private void populateListView() {
         if (countryListAdapter == null) {
-            Log.d(TAG, "Fetching countryies from server...");
+            Log.d(TAG, "Fetching countries from server...");
 
             JsonRequest countryListRequest = new ApiHelper(getApplicationContext())
                     .getAllCountries(
@@ -326,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Result van de signin intent
+        // Result van de SignIn intent
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result, false);
@@ -342,6 +416,13 @@ public class MainActivity extends AppCompatActivity implements
 
             if (googleAccount != null) {
                 Log.d(TAG, googleAccount.getDisplayName() + " is now logged in");
+
+                accountHeader.addProfiles(
+                        new ProfileDrawerItem()
+                                .withEmail(googleAccount.getEmail())
+                                .withName(googleAccount.getDisplayName())
+                                .withIcon(googleAccount.getPhotoUrl())
+                );
 
                 signInUser(googleAccount.getIdToken());
 

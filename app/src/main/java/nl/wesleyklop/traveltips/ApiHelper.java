@@ -15,10 +15,11 @@ import java.util.Map;
  * Created by wesley on 11-3-16.
  * Class to help access the TravelTips API
  */
+@SuppressWarnings("WeakerAccess")
 public class ApiHelper {
-    public final static String TAG = "ApiHelper";
+    private final static String TAG = "ApiHelper";
+    private static final boolean debugMode = true;
     private static String endPoint;
-    private static boolean debugMode = true;
     private JsonRequest lastRequest;
 
     /**
@@ -43,7 +44,7 @@ public class ApiHelper {
      * Do a post request against a resource
      *
      * @param params           String Map of parameters
-     * @param responseListener Responselistener to execute on response
+     * @param responseListener ResponseListener to execute on response
      * @param errorListener    to execute on error
      * @return JsonRequest to add to a RequestQueue
      */
@@ -130,7 +131,7 @@ public class ApiHelper {
     }
 
     /**
-     * Get a hashmap containing parameters
+     * Get a HashMap containing parameters
      *
      * @param action parameter
      * @return Map to add parameters to
@@ -145,7 +146,7 @@ public class ApiHelper {
     }
 
     /**
-     * Get a hashmap containing parameters
+     * Get a HashMap containing parameters
      *
      * @return Map to add parameters to
      */

@@ -35,7 +35,7 @@ import nl.wesleyklop.traveltips.ReqQueue;
  */
 public class AddTipActivity extends AppCompatActivity {
 
-    public final static String TAG = "AddTipActivity";
+    private final static String TAG = "AddTipActivity";
     private ArrayList<HashMap<String, String>> countryList = null;
 
     @Override

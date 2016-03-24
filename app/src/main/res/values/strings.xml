@@ -1,17 +1,14 @@
 <resources>
     <string name="app_name">Travel Tips</string>
     <string name="action_settings">Settings</string>
-    <string name="country_search_text">Search countries</string>
     <string name="country_listitem_placeholder">Here belongs a country</string>
     <string name="country_listview_header">Countries</string>
-    <string name="server_client_id">841821378714-3kiqke67jfoqo9d3r5qfpn0clug5lr3l.apps.googleusercontent.com</string>
-    <string name="tips_listview_header_placeholder">COUNTRY NAME HERE</string>
+    <string name="server_client_id" translatable="false">841821378714-3kiqke67jfoqo9d3r5qfpn0clug5lr3l.apps.googleusercontent.com</string>
+    <string name="tips_listview_header_placeholder">[Country Name]</string>
     <string name="action_logout">Sign out</string>
-    <string name="api_endpoint">http://ap24-28.ict-lab.nl/api/json.php</string>
-    <string name="header_tip_add">Add tip</string>
+    <string name="api_endpoint" translatable="false">http://ap24-28.ict-lab.nl/api/json.php</string>
     <string name="hint_tip_title">Title</string>
     <string name="hint_tip_message">Message</string>
-    <string name="hint_tip_submit">Submit Tip</string>
     <string name="hint_tip_country">Country</string>
     <string name="not_logged_in_warning">You need to be logged in to do that.</string>
     <string name="action_add_tip_title">Add tip</string>
