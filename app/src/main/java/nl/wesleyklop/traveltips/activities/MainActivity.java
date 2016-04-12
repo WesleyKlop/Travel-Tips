@@ -48,7 +48,9 @@ import com.mikepenz.materialdrawer.holder.ImageHolder;
 import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.squareup.picasso.Picasso;
@@ -73,18 +75,21 @@ public class MainActivity extends AppCompatActivity implements
         Drawer.OnDrawerItemClickListener {
 
     private static final String TAG = "MainActivity";
-
     private static final int RC_SIGN_IN = 2428;
-    private static ListAdapter countryListAdapter = null;
     private static GoogleApiClient mGoogleApiClient = null;
-    private static ArrayList<HashMap<String, String>> countryList = new ArrayList<>();
     private static boolean isUserLoggedIn = false;
     private static GoogleSignInAccount googleAccount = null;
+    private static IProfile userProfile = null;
+    private static PrimaryDrawerItem signInOutButton = null;
+    private static ListAdapter countryListAdapter = null;
+    private static ArrayList<HashMap<String, String>> countryList = new ArrayList<>();
     private RequestQueue queue;
-    private ListView mCountryListView;
-    private boolean doStartAddTipActivityOnResult = false;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private AccountHeader accountHeader;
+    private Drawer navigationDrawer;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private ListView mCountryListView;
+
+    private boolean doStartAddTipActivityOnResult = false;
 
     @SuppressLint("InflateParams")
     @Override
@@ -150,21 +155,39 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-
         accountHeader = new AccountHeaderBuilder()
                 .withActivity(this)
+                .withSelectionListEnabledForSingleProfile(false)
                 .withHeaderBackground(new ImageHolder(getDrawable(R.drawable.img_header_background)))
-                        //.withTextColorRes(R.color.text_primary)
                 .build();
 
+        if (userProfile != null) {
+            accountHeader.addProfiles(userProfile);
+        }
 
-        Drawer navigationDrawer = new DrawerBuilder()
+        if (signInOutButton == null) {
+            signInOutButton = new PrimaryDrawerItem()
+                    .withName(R.string.common_signin_button_text);
+        }
+
+        navigationDrawer = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar((Toolbar) findViewById(R.id.toolbar))
                 .addDrawerItems(
-                        new PrimaryDrawerItem().withName("HOLY FUCKING SHIT THAT WAS EASY"),
+                        signInOutButton,
                         new DividerDrawerItem(),
-                        new PrimaryDrawerItem().withName(R.string.action_settings).withIcon(GoogleMaterial.Icon.gmd_settings)
+                        /*new PrimaryDrawerItem()
+                                .withName(R.string.action_settings)
+                                .withIcon(GoogleMaterial.Icon.gmd_settings)
+                                .withSelectable(false),*/
+                        new SecondaryDrawerItem()
+                                .withName(R.string.action_about)
+                                .withIcon(GoogleMaterial.Icon.gmd_info)
+                                .withSelectable(false),
+                        new SecondaryDrawerItem()
+                                .withName("Github")
+                                .withIcon(GoogleMaterial.Icon.gmd_code)
+                                .withSelectable(false)
                 )
                 .withOnDrawerItemClickListener(this)
                 .withAccountHeader(accountHeader, true)
@@ -208,18 +231,24 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-        Log.d(TAG, String.valueOf(position));
+        Log.i(TAG, "Clicked on menu item " + String.valueOf(position));
         switch (position) {
-            case 0:
-                Log.d(TAG, "HOLY SHIT!?");
+            case 0: // Sign in/out
+                if (isUserLoggedIn) {
+                    signOut();
+                } else {
+                    startSignIn();
+                }
                 return true;
-            case 1:
-                // Divider
+            case 2: // Settings
                 return true;
-            case 2:
-                Log.d(TAG, "SETTINGS?");
+            case 3: // About
                 return true;
-            default:
+            case 4: // Github
+                final Intent githubIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/WesleyKlop/Travel-Tips"));
+                startActivity(githubIntent);
+                return true;
+            default: // Divider/other
                 return false;
         }
     }
@@ -274,6 +303,12 @@ public class MainActivity extends AppCompatActivity implements
                     );
                 }
                 isUserLoggedIn = false;
+
+                if (signInOutButton != null) {
+                    signInOutButton.withName(R.string.common_signin_button_text);
+                    navigationDrawer.updateItem(signInOutButton);
+                }
+
                 invalidateOptionsMenu();
             }
         };
@@ -417,12 +452,19 @@ public class MainActivity extends AppCompatActivity implements
             if (googleAccount != null) {
                 Log.d(TAG, googleAccount.getDisplayName() + " is now logged in");
 
-                accountHeader.addProfiles(
-                        new ProfileDrawerItem()
-                                .withEmail(googleAccount.getEmail())
-                                .withName(googleAccount.getDisplayName())
-                                .withIcon(googleAccount.getPhotoUrl())
-                );
+                if (userProfile == null) {
+                    userProfile = new ProfileDrawerItem()
+                            .withEmail(googleAccount.getEmail())
+                            .withName(googleAccount.getDisplayName())
+                            .withIcon(googleAccount.getPhotoUrl());
+                    accountHeader.addProfiles(userProfile);
+                }
+
+                if (signInOutButton != null) {
+                    signInOutButton.withName(R.string.action_logout)
+                            .withIcon(GoogleMaterial.Icon.gmd_account_circle);
+                    navigationDrawer.updateItem(signInOutButton);
+                }
 
                 signInUser(googleAccount.getIdToken());
 

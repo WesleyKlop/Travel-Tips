@@ -14,4 +14,5 @@
     <string name="action_add_tip_title">Add tip</string>
     <string name="action_search">Search</string>
     <string name="action_refresh">Refresh</string>
+    <string name="action_about">About</string>
 </resources>
